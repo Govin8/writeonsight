@@ -1,21 +1,21 @@
 .container {
-  background: linear-gradient(145deg, #ffffff, #f1f5f9); /* Subtle gradient background */
+  background: linear-gradient(145deg, #ffffff, #f1f5f9);
   padding: 3rem 2.5rem;
-  border-radius: 20px; /* Softer, modern border radius */
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15); /* Deeper shadow for depth */
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
   max-width: 450px;
-  width: 90%; /* Responsive width */
-  margin: 0 auto 3rem; /* Centered with bottom margin */
-  transition: all 0.3s ease; /* Smooth transitions for hover effects */
-  border: 1px solid rgba(255, 255, 255, 0.5); /* Subtle border for glass effect */
-  backdrop-filter: blur(10px); /* Glassmorphism effect */
+  width: 90%;
+  margin: 0 auto 3rem;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
   position: relative;
-  overflow: hidden; /* Ensure content stays within bounds */
+  overflow: hidden;
 }
 
 .container:hover {
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
-  transform: translateY(-5px); /* Lift effect on hover */
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+  transform: translateY(-5px);
 }
 
 h2 {
@@ -25,16 +25,16 @@ h2 {
   font-weight: 700;
   color: #1e293b;
   letter-spacing: 0.03em;
-  background: linear-gradient(90deg, #06b6d4, #8b5cf6); /* Gradient text */
+  background: linear-gradient(90deg, #06b6d4, #8b5cf6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: fadeIn 1s ease-in-out; /* Fade-in animation */
+  animation: fadeIn 1s ease-in-out;
 }
 
 form {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center form elements */
+  align-items: center;
 }
 
 input[type="email"],
@@ -54,27 +54,27 @@ textarea {
   outline-offset: 3px;
   outline-color: transparent;
   outline-style: solid;
-  width: 100%; /* Full width for consistency */
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05); /* Subtle inset shadow */
+  width: 100%;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 input:focus,
 textarea:focus {
-  border-color: #8b5cf6; /* Updated focus color */
-  box-shadow: 0 0 8px 3px rgba(139, 92, 246, 0.35); /* Softer glow */
+  border-color: #8b5cf6;
+  box-shadow: 0 0 8px 3px rgba(139, 92, 246, 0.35);
   background-color: #fff;
   outline-color: #8b5cf6;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #94a3b8; /* Softer placeholder color */
+  color: #94a3b8;
   font-style: italic;
 }
 
 button {
   padding: 1rem;
-  background: linear-gradient(90deg, #06b6d4, #3b82f6); /* Gradient background */
+  background: linear-gradient(90deg, #06b6d4, #3b82f6);
   color: white;
   border: none;
   border-radius: 12px;
@@ -87,7 +87,7 @@ button {
   box-shadow: 0 6px 12px rgba(59, 130, 246, 0.35);
   position: relative;
   overflow: hidden;
-  width: 100%; /* Full width for consistency */
+  width: 100%;
 }
 
 button::after {
@@ -102,14 +102,14 @@ button::after {
 }
 
 button:hover::after {
-  left: 100%; /* Shine effect on hover */
+  left: 100%;
 }
 
 button:hover,
 button:focus {
-  background: linear-gradient(90deg, #0891b2, #2563eb); /* Darker gradient on hover */
+  background: linear-gradient(90deg, #0891b2, #2563eb);
   box-shadow: 0 8px 16px rgba(37, 99, 235, 0.5);
-  transform: scale(1.02); /* Subtle scale effect */
+  transform: scale(1.02);
   outline: none;
 }
 
@@ -132,11 +132,11 @@ button:active {
   transition: all 0.3s ease;
   user-select: none;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  width: 100%; /* Full width for consistency */
+  width: 100%;
 }
 
 .social-btn.facebook {
-  background: linear-gradient(90deg, #3b5998, #4f74c8); /* Gradient for Facebook button */
+  background: linear-gradient(90deg, #3b5998, #4f74c8);
   color: white;
   border-color: #2d4373;
 }
@@ -174,7 +174,7 @@ button:active {
 }
 
 .switch a {
-  color: #8b5cf6; /* Updated link color */
+  color: #8b5cf6;
   text-decoration: none;
   font-weight: 700;
   transition: all 0.3s ease;
@@ -182,7 +182,7 @@ button:active {
 
 .switch a:hover,
 .switch a:focus {
-  color: #7c3aed; /* Darker shade on hover */
+  color: #7c3aed;
   text-decoration: underline;
   outline: none;
 }
@@ -192,13 +192,13 @@ button:active {
 }
 
 #ocr-status {
-  margin: 1.2rem 0; /* Adjusted for better spacing */
+  margin: 1.2rem 0;
   font-size: 1.1rem;
   color: #64748b;
   font-style: italic;
   min-height: 1.4em;
   user-select: text;
-  text-align: center; /* Centered status text */
+  text-align: center;
 }
 
 #ocr-result {
@@ -226,7 +226,7 @@ button:active {
     padding: 1.8rem 1.2rem;
   }
   header {
-    font-size: 1.5rem; /* Adjusted for smaller screens */
+    font-size: 1.5rem;
     margin-bottom: 1.2rem;
   }
   .container {
@@ -242,7 +242,7 @@ button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 a:focus-visible {
-  outline: 3px solid #8b5cf6; /* Updated focus outline color */
+  outline: 3px solid #8b5cf6;
   outline-offset: 3px;
 }
 
@@ -272,20 +272,18 @@ input[type="file"] {
 }
 
 input[type="file"]:hover {
-  border-color: #8b5cf6; /* Hover effect for file input */
+  border-color: #8b5cf6;
   box-shadow: 0 0 6px rgba(139, 92, 246, 0.3);
 }
 
 .image-input {
-  width: 220px; /* Slightly larger for better visibility */
+  width: 220px;
   height: 110px;
 }
 
-/* Animation for fade-in effect */
 @keyframes fadeIn {
   0% { opacity: 0; transform: translateY(15px); }
   100% { opacity: 1; transform: translateY(0); }
 }
-
 
  
