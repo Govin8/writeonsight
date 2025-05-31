@@ -13,7 +13,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
     if (isLogin) {
       if (users[email] === password) {
         setLoggedIn(true);
-        onLoginSuccess({ name: users[email + '_name'], email }); // Pass name and email
+        onLoginSuccess({ name: users[email + '_name'], email });
       } else {
         alert("Incorrect email or password, or you haven't signed up yet.");
       }
@@ -32,12 +32,10 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
     signInWithPopup(auth, googleProvider)
       .then((result) => {
         const user = result.user;
-        console.log("Google user:", user);
         setLoggedIn(true);
-        onLoginSuccess({ name: user.displayName, email: user.email }); // Pass Google name and email
+        onLoginSuccess({ name: user.displayName, email: user.email });
       })
       .catch((error) => {
-        console.error("Google Sign-In Error:", error.message);
         alert("Google sign-in failed. Try again.");
       });
   };
@@ -46,12 +44,10 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
     signInWithPopup(auth, facebookProvider)
       .then((result) => {
         const user = result.user;
-        console.log("Facebook user:", user);
         setLoggedIn(true);
-        onLoginSuccess({ name: user.displayName, email: user.email }); // Pass Facebook name and email
+        onLoginSuccess({ name: user.displayName, email: user.email });
       })
       .catch((error) => {
-        console.error("Facebook Sign-In Error:", error.message);
         alert("Facebook sign-in failed. Try again.");
       });
   };
