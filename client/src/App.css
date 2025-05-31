@@ -1,5 +1,5 @@
 body {
-  background: linear-gradient(135deg, #e0f2fe, #dbeafe, #f3e8ff); /* Softer, multi-tone gradient */
+  background: linear-gradient(135deg, #e0f2fe, #dbeafe, #f3e8ff);
   color: #1e293b;
   display: flex;
   flex-direction: column;
@@ -13,7 +13,7 @@ body {
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden; /* Prevent horizontal overflow */
+  overflow-x: hidden;
 }
 
 .app-container {
@@ -27,57 +27,57 @@ body {
 
 .app-header {
   width: 100%;
-  background: linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6); /* Extended gradient with purple */
+  background: linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6);
   padding: 1.8rem 2.5rem;
   color: white;
   box-sizing: border-box;
   margin: 0;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Deeper shadow */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* Subtle border */
-  backdrop-filter: blur(5px); /* Slight glass effect */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
 }
 
 .logo {
-  font-size: 2.5rem; /* Slightly larger for impact */
+  font-size: 2.5rem;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: linear-gradient(45deg, #fff, #d1fae5, #e0f2fe); /* Softer gradient */
+  background: linear-gradient(45deg, #fff, #d1fae5, #e0f2fe);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: fadeIn 1s ease-in-out; /* Smooth entrance */
-  transition: transform 0.3s ease; /* For hover effect */
+  animation: fadeIn 1s ease-in-out;
+  transition: transform 0.3s ease;
 }
 
 .logo:hover {
-  transform: scale(1.05); /* Subtle scale on hover */
+  transform: scale(1.05);
 }
 
 .nav-links {
   display: flex;
-  gap: 2rem; /* Increased gap for better spacing */
+  gap: 2rem;
   margin-right: 0;
 }
 
 .nav-links button {
-  background: rgba(255, 255, 255, 0.15); /* Slightly more opaque */
+  background: rgba(255, 255, 255, 0.15);
   border: 2px solid rgba(255, 255, 255, 0.9);
   color: white;
-  padding: 0.8rem 1.6rem; /* Slightly larger padding */
+  padding: 0.8rem 1.6rem;
   cursor: pointer;
-  border-radius: 14px; /* Softer corners */
-  font-size: 1.2rem; /* Larger font for readability */
+  border-radius: 14px;
+  font-size: 1.2rem;
   font-weight: 700;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Subtle shadow */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .nav-links button::after {
@@ -92,26 +92,26 @@ body {
 }
 
 .nav-links button:hover::after {
-  left: 100%; /* Shine effect on hover */
+  left: 100%;
 }
 
 .nav-links button:hover {
   background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.08); /* Slightly larger scale */
+  transform: scale(1.08);
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
   border-color: #fff;
 }
 
 .main-content {
   flex: 1;
-  padding: 4rem 2.5rem; /* More spacious padding */
-  background: linear-gradient(180deg, #e0f2fe, #f3e8ff, #f8fafc); /* Multi-tone gradient */
+  padding: 4rem 2.5rem;
+  background: linear-gradient(180deg, #e0f2fe, #f3e8ff, #f8fafc);
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  min-height: calc(100vh - 90px); /* Adjusted for larger header */
+  min-height: calc(100vh - 90px);
   position: relative;
-  overflow: hidden; /* Prevent overflow */
+  overflow: hidden;
 }
 
 .main-content::before {
@@ -121,23 +121,23 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.1), transparent 70%); /* Subtle overlay */
+  background: radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.1), transparent 70%);
   z-index: -1;
 }
 
 .welcome-text {
-  font-size: 3.5rem; /* Larger for impact */
+  font-size: 3.5rem;
   font-weight: 800;
   color: #1e293b;
   letter-spacing: 0.04em;
   text-align: center;
   margin: 0;
   padding: 2rem;
-  background: linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6); /* Extended gradient */
+  background: linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: fadeIn 1.5s ease-in-out;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .placeholder {
@@ -146,7 +146,7 @@ body {
   font-style: italic;
   text-align: center;
   margin-top: 3rem;
-  background: linear-gradient(45deg, #06b6d4, #3b82f6, #8b5cf6); /* Extended gradient */
+  background: linear-gradient(45deg, #06b6d4, #3b82f6, #8b5cf6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: pulse 2.5s infinite;
@@ -192,7 +192,7 @@ body {
 }
 
 #logout-btn {
-  background: linear-gradient(90deg, #f87171, #ef4444); /* Gradient for logout button */
+  background: linear-gradient(90deg, #f87171, #ef4444);
   color: white;
   border-radius: 12px;
   padding: 0.7rem 1.4rem;
@@ -208,6 +208,6 @@ body {
 #logout-btn:focus {
   background: linear-gradient(90deg, #ef4444, #b91c1c);
   box-shadow: 0 6px 14px rgba(185, 28, 28, 0.6);
-  transform: scale(1.05); /* Subtle scale effect */
+  transform: scale(1.05);
   outline: none;
 }
