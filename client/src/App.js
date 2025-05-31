@@ -324,7 +324,8 @@ export default function App() {
                 Logout
               </button>
             </div>
-          );
+          </div>
+        );
       default:
         return null;
     }
@@ -409,7 +410,7 @@ export default function App() {
                 fontSize: '1.2rem',
                 fontWeight: '700',
                 transition: 'all 0.3s ease',
-                position: 'relative',
+                position: 'ර්‍elative',
                 overflow: 'hidden',
                 boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
                 opacity: currentPage === page ? 1 : 0.7,
