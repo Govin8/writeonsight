@@ -56,12 +56,12 @@ export default function App() {
               textShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
             }}
           >
-            Welcome to Write!
+            Welcome to Write On Sight!
           </h1>
         );
       case 'ocr':
         return <ImageUpload />;
-      case 'notes':
+      case 'writingDashboard':
       case 'archive':
         return (
           <h2 
@@ -396,7 +396,7 @@ export default function App() {
             marginRight: 0,
           }}
         >
-          {['home', 'notes', 'ocr', 'archive', 'profile'].map((page) => (
+          {['home', 'writingDashboard', 'ocr', 'archive', 'profile'].map((page) => (
             <button
               key={page}
               onClick={() => setCurrentPage(page)}
@@ -410,7 +410,7 @@ export default function App() {
                 fontSize: '1.2rem',
                 fontWeight: '700',
                 transition: 'all 0.3s ease',
-                position: 'ර්‍elative',
+                position: 'relative',
                 overflow: 'hidden',
                 boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
                 opacity: currentPage === page ? 1 : 0.7,
@@ -441,7 +441,7 @@ export default function App() {
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.left = '100%'}
               />
-              {page === 'ocr' ? 'OCR' : page.charAt(0).toUpperCase() + page.slice(1)}
+              {page === 'writingDashboard' ? 'Writing Dashboard' : page === 'ocr' ? 'OCR' : page.charAt(0).toUpperCase() + page.slice(1)}
             </button>
           ))}
         </nav>
