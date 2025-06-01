@@ -355,7 +355,7 @@ export default function App() {
         style={{
           width: '100%',
           background: 'linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6)',
-          padding: '1.8rem 2.5rem',
+          padding: '0.5rem 2.5rem',
           color: 'white',
           boxSizing: 'border-box',
           margin: 0,
@@ -368,25 +368,32 @@ export default function App() {
           zIndex: 10,
           borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
           backdropFilter: 'blur(5px)',
+          height: '80px',
         }}
       >
         <div 
           className="logo"
           style={{
-            fontSize: '2.5rem',
-            fontWeight: '900',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            background: 'linear-gradient(45deg, #fff, #d1fae5, #e0f2fe)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
             animation: 'fadeIn 1s ease-in-out',
             transition: 'transform 0.3s ease',
+            borderRadius: '14px',
+            overflow: 'hidden',
           }}
           onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
           onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
-          WoS
+          <img 
+            src="https://i.postimg.cc/jCLNDXkp/Whats-App-Image-2025-06-01-at-14-13-20.jpg"
+            alt="Write On Sight Logo"
+            style={{
+              height: '70px',
+              width: 'auto',
+              display: 'block',
+            }}
+          />
         </div>
         <nav 
           className="nav-links"
