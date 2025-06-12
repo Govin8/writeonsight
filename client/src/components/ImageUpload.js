@@ -59,11 +59,11 @@ export default function ImageUpload() {
     }
 
     try {
-      // Dynamically import jsPDF
+      
       const { jsPDF } = await import('jspdf');
       const doc = new jsPDF();
       
-      // Split text into lines that fit the page width
+     
       const pageWidth = doc.internal.pageSize.getWidth();
       const margin = 20;
       const maxLineWidth = pageWidth - 2 * margin;
@@ -88,37 +88,39 @@ export default function ImageUpload() {
     }
   };
 
-  // Export as DOCX (using docx library)
-  const exportAsDocx = async () => {
+  const exportAsDocx = () => {
     if (!ocrText.trim()) {
       alert('No text to export. Please extract text from an image first.');
       return;
     }
 
     try {
-      // Dynamically import docx and file-saver
-      const { Document, Packer, Paragraph } = await import('docx');
-      const { saveAs } = await import('file-saver');
+      setOcrStatus("Preparing DOCX export...");
       
-      // Split text into paragraphs
-      const paragraphs = ocrText.split('\n').map(line => 
-        new Paragraph({
-          text: line,
-        })
-      );
+      // Create a simple DOCX-like file using RTF format which can be opened by Word
+      const rtfContent = `{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Times New Roman;}}\\f0\\fs24 ${ocrText.replace(/\n/g, '\\par ')}}`;
       
-      const doc = new Document({
-        sections: [{
-          properties: {},
-          children: paragraphs,
-        }],
-      });
+      const blob = new Blob([rtfContent], { type: 'application/rtf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `extracted-text-${Date.now()}.rtf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
       
-      const blob = await Packer.toBlob(doc);
-      saveAs(blob, `extracted-text-${Date.now()}.docx`);
+      setOcrStatus("Document export complete!");
+      
+    
+      setTimeout(() => {
+        setOcrStatus("Upload an image to extract text.");
+      }, 3000);
+      
     } catch (error) {
-      console.error('Error exporting DOCX:', error);
-      alert('Error exporting DOCX. Please try again.');
+      console.error('Error exporting document:', error);
+      setOcrStatus("Failed to export document.");
+      alert(`Error exporting document: ${error.message}`);
     }
   };
 
@@ -275,7 +277,7 @@ export default function ImageUpload() {
         />
       </div>
 
-      {/* Export Buttons */}
+      
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
