@@ -33,6 +33,109 @@ export default function ImageUpload() {
       });
   };
 
+  // Export as TXT
+  const exportAsTxt = () => {
+    if (!ocrText.trim()) {
+      alert('No text to export. Please extract text from an image first.');
+      return;
+    }
+    
+    const blob = new Blob([ocrText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `extracted-text-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Export as PDF (using jsPDF)
+  const exportAsPdf = async () => {
+    if (!ocrText.trim()) {
+      alert('No text to export. Please extract text from an image first.');
+      return;
+    }
+
+    try {
+      // Dynamically import jsPDF
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
+      
+      // Split text into lines that fit the page width
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      const maxLineWidth = pageWidth - 2 * margin;
+      const lineHeight = 10;
+      
+      const lines = doc.splitTextToSize(ocrText, maxLineWidth);
+      
+      let y = margin;
+      lines.forEach((line) => {
+        if (y > doc.internal.pageSize.getHeight() - margin) {
+          doc.addPage();
+          y = margin;
+        }
+        doc.text(line, margin, y);
+        y += lineHeight;
+      });
+      
+      doc.save(`extracted-text-${Date.now()}.pdf`);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      alert('Error exporting PDF. Please try again.');
+    }
+  };
+
+  // Export as DOCX (using docx library)
+  const exportAsDocx = async () => {
+    if (!ocrText.trim()) {
+      alert('No text to export. Please extract text from an image first.');
+      return;
+    }
+
+    try {
+      // Dynamically import docx and file-saver
+      const { Document, Packer, Paragraph } = await import('docx');
+      const { saveAs } = await import('file-saver');
+      
+      // Split text into paragraphs
+      const paragraphs = ocrText.split('\n').map(line => 
+        new Paragraph({
+          text: line,
+        })
+      );
+      
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: paragraphs,
+        }],
+      });
+      
+      const blob = await Packer.toBlob(doc);
+      saveAs(blob, `extracted-text-${Date.now()}.docx`);
+    } catch (error) {
+      console.error('Error exporting DOCX:', error);
+      alert('Error exporting DOCX. Please try again.');
+    }
+  };
+
+  const buttonStyle = {
+    padding: '0.8rem 1.5rem',
+    margin: '0 0.5rem',
+    border: 'none',
+    borderRadius: '10px',
+    fontSize: '0.95rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    color: 'white',
+    minWidth: '80px',
+  };
+
   return (
     <div 
       className="container ocr-container"
@@ -41,7 +144,7 @@ export default function ImageUpload() {
         padding: '3rem 2.5rem',
         borderRadius: '20px',
         boxShadow: '0 12px 30px rgba(0, 0, 0, 0.15)',
-        maxWidth: '450px',
+        maxWidth: '500px',
         width: '90%',
         margin: '0 auto 3rem',
         transition: 'all 0.3s ease',
@@ -53,7 +156,7 @@ export default function ImageUpload() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'space-between',
-        minHeight: '500px',
+        minHeight: '600px',
       }}
       onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
       onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
@@ -74,6 +177,7 @@ export default function ImageUpload() {
       >
         OCR Tool
       </h2>
+      
       <div 
         style={{
           width: '100%',
@@ -112,6 +216,7 @@ export default function ImageUpload() {
           }}
         />
       </div>
+      
       <p 
         id="ocr-status"
         style={{
@@ -127,19 +232,21 @@ export default function ImageUpload() {
       >
         {ocrStatus}
       </p>
+      
       <div 
         style={{
           width: '100%',
           display: 'flex',
           justifyContent: 'center',
           padding: '0 1.2rem',
+          marginBottom: '1.5rem',
         }}
       >
         <textarea 
           rows="6" 
           placeholder="Extracted text will appear here..." 
           value={ocrText} 
-          readOnly
+          onChange={(e) => setOcrText(e.target.value)}
           style={{
             width: '90%',
             padding: '1rem 1.2rem',
@@ -167,6 +274,88 @@ export default function ImageUpload() {
           }}
         />
       </div>
+
+      {/* Export Buttons */}
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        gap: '0.5rem',
+        marginTop: '1rem',
+      }}>
+        <button
+          onClick={exportAsTxt}
+          style={{
+            ...buttonStyle,
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+          }}
+        >
+          📄 TXT
+        </button>
+        
+        <button
+          onClick={exportAsPdf}
+          style={{
+            ...buttonStyle,
+            background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(220, 38, 38, 0.4)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+          }}
+        >
+          📕 PDF
+        </button>
+        
+        <button
+          onClick={exportAsDocx}
+          style={{
+            ...buttonStyle,
+            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(37, 99, 235, 0.4)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+          }}
+        >
+          📘 DOCX
+        </button>
+        
+        <button
+          onClick={resetOcr}
+          style={{
+            ...buttonStyle,
+            background: 'linear-gradient(135deg, #6b7280, #4b5563)',
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(107, 114, 128, 0.4)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+          }}
+        >
+          🔄 Reset
+        </button>
+      </div>
+
       <style>
         {`
           @keyframes fadeIn {
