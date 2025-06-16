@@ -1,0 +1,38 @@
+.welcome-text {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: 0.04em;
+  text-align: center;
+  margin: 0;
+  padding: 2rem;
+  background: linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: fadeIn 1.5s ease-in-out;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.placeholder {
+  font-size: 2.2rem;
+  color: #0ea5e9;
+  font-style: italic;
+  text-align: center;
+  margin-top: 3rem;
+  background: linear-gradient(45deg, #06b6d4, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: pulse 2.5s infinite;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .welcome-text {
+    font-size: 2.5rem;
+    padding: 1.2rem;
+  }
+  .placeholder {
+    font-size: 1.8rem;
+    margin-top: 2rem;
+  }
+}
