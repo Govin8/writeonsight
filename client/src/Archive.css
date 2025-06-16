@@ -1,0 +1,153 @@
+.writing-dashboard {
+  background: linear-gradient(145deg, #ffffff, #f9f9ff, #eef2f7);
+  padding: 3.5rem 4rem;
+  border-radius: 25px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 15px rgba(139, 92, 246, 0.1);
+  max-width: 950px;
+  width: 95%;
+  margin: 0 auto 4rem;
+  transition: all 0.4s ease;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(15px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.writing-dashboard::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.05) 0%, transparent 70%);
+  animation: rotate 20s linear infinite;
+  z-index: -1;
+}
+
+.writing-dashboard h2 {
+  margin-bottom: 2.5rem;
+  font-size: 2.2rem;
+  text-align: center;
+  font-weight: 900;
+  color: #1e293b;
+  letter-spacing: 0.06em;
+  background: linear-gradient(90deg, #06b6d4, #8b5cf6, #9333ea);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: fadeIn 1.2s ease-in-out;
+  text-shadow: 0 4px 10px rgba(139, 92, 246, 0.2);
+}
+
+.writing-dashboard .draft-list {
+  width: 100%;
+}
+
+.writing-dashboard .draft-list div {
+  padding: 1.8rem 2.5rem;
+  margin-bottom: 1.8rem;
+  background: linear-gradient(145deg, #ffffff, #f3f4f6);
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  transition: all 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.writing-dashboard .draft-list div::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+  animation: rotate 15s linear infinite;
+  z-index: -1;
+}
+
+.writing-dashboard .draft-list div:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+}
+
+.writing-dashboard .draft-list h3 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: #1e293b;
+  font-weight: 800;
+  background: linear-gradient(90deg, #06b6d4, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.writing-dashboard .draft-list p {
+  margin: 0;
+  color: #64748b;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.writing-dashboard .draft-list .draft-actions {
+  display: flex;
+  gap: 1.2rem;
+  justify-content: flex-end;
+}
+
+.writing-dashboard .draft-list .draft-actions button {
+  padding: 0.8rem 1.5rem;
+  background: linear-gradient(90deg, #06b6d4, #3b82f6);
+  color: white;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  border: none;
+  box-shadow: 0 6px 12px rgba(59, 130, 246, 0.4);
+}
+
+.writing-dashboard .draft-list .draft-actions button:hover {
+  background: linear-gradient(90deg, #0891b2, #2563eb);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.6);
+  transform: scale(1.06);
+}
+
+.writing-dashboard .draft-list .draft-actions .unarchive-btn {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+.writing-dashboard .draft-list .draft-actions .unarchive-btn:hover {
+  background: linear-gradient(90deg, #16a34a, #065f46);
+  box-shadow: 0 8px 18px rgba(6, 95, 70, 0.6);
+}
+
+@media (max-width: 768px) {
+  .writing-dashboard {
+    padding: 2.5rem 1.8rem;
+    max-width: 100%;
+    width: 92%;
+  }
+  .writing-dashboard h2 {
+    font-size: 1.8rem;
+  }
+  .writing-dashboard .draft-list div {
+    padding: 1.2rem 1.5rem;
+  }
+  .writing-dashboard .draft-list h3 {
+    font-size: 1.3rem;
+  }
+  .writing-dashboard .draft-list p {
+    font-size: 1rem;
+  }
+  .writing-dashboard .draft-list .draft-actions button {
+    padding: 0.7rem 1.2rem;
+    font-size: 1rem;
+  }
+}
