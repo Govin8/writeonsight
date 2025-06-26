@@ -1,6 +1,48 @@
 import { useState, useEffect } from 'react';
 
 export default function WritingDashboard({ drafts, currentDraft, setDrafts, setCurrentDraft, isEditing, setIsEditing, createDraft, saveDraft, editDraft, addTag, deleteDraft, archiveDraft, exportDraft }) {
+  const [tags, setTags] = useState(currentDraft.tags || []);
+  const [newTag, setNewTag] = useState('');
+
+  useEffect(() => {
+    setTags(currentDraft.tags || []);
+  }, [currentDraft.tags]);
+
+  const handleTagToggle = (tag) => {
+    setTags(prev => 
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+    setCurrentDraft({ ...currentDraft, tags: tags.includes(tag) ? currentDraft.tags.filter(t => t !== tag) : [...currentDraft.tags, tag] });
+  };
+
+  const handleAddNewTag = (e) => {
+    if (e.key === 'Enter' && newTag.trim() && !tags.includes(newTag.trim())) {
+      addTag(newTag.trim());
+      setNewTag('');
+    }
+  };
+
+  const handleSaveDraft = () => {
+    const updatedDraft = { ...currentDraft, tags, lastEdited: new Date().toISOString() };
+    saveDraft(updatedDraft);
+    setCurrentDraft(updatedDraft);
+    setDrafts(drafts.map(d => d.id === updatedDraft.id ? updatedDraft : d));
+  };
+
+  const buttonStyle = {
+    padding: '0.8rem 1.5rem',
+    margin: '0 0.5rem',
+    border: 'none',
+    borderRadius: '10px',
+    fontSize: '0.95rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    color: 'white',
+    minWidth: '80px',
+  };
+
   return (
     <div 
       className="writing-dashboard"
@@ -38,7 +80,7 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
       >
         Writing Dashboard
       </h2>
-      <div className="action-buttons">
+      <div className="action-buttons" style={{ marginBottom: '2.5rem' }}>
         <button 
           onClick={createDraft}
           style={{
@@ -127,7 +169,7 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
         </button>
       </div>
       {isEditing ? (
-        <div className="draft-editor" style={{ width: '100%', marginBottom: '1.5rem' }}>
+        <div className="draft-editor" style={{ width: '100%', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <input
             type="text"
             value={currentDraft.title}
@@ -144,8 +186,10 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
               backgroundColor: '#f8fafc',
               transition: 'all 0.3s ease',
               outline: 'none',
-              width: '100%',
+              width: '80%',
+              maxWidth: 600,
               boxShadow: 'inset 0 2px 6px rgba(0, 0, 0, 0.05)',
+              textAlign: 'left',
             }}
             onFocus={(e) => {
               e.currentTarget.style.borderColor = '#8b5cf6';
@@ -173,9 +217,11 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
               backgroundColor: '#f8fafc',
               transition: 'all 0.3s ease',
               outline: 'none',
-              width: '100%',
+              width: '80%',
+              maxWidth: 600,
               minHeight: '300px',
               boxShadow: 'inset 0 2px 6px rgba(0, 0, 0, 0.05)',
+              textAlign: 'left',
             }}
             onFocus={(e) => {
               e.currentTarget.style.borderColor = '#8b5cf6';
@@ -190,8 +236,9 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
           />
           <input
             type="text"
-            value=""
-            onKeyPress={(e) => { if (e.key === 'Enter') addTag(e.target.value); }}
+            value={newTag}
+            onChange={(e) => setNewTag(e.target.value)}
+            onKeyPress={handleAddNewTag}
             placeholder="Add tag and press Enter"
             className="tag-input"
             style={{
@@ -205,8 +252,10 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
               backgroundColor: '#f8fafc',
               transition: 'all 0.3s ease',
               outline: 'none',
-              width: '100%',
+              width: '80%',
+              maxWidth: 600,
               boxShadow: 'inset 0 2px 6px rgba(0, 0, 0, 0.05)',
+              textAlign: 'left',
             }}
             onFocus={(e) => {
               e.currentTarget.style.borderColor = '#8b5cf6';
@@ -220,7 +269,25 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
             }}
           />
           <div className="tags" style={{ marginBottom: '1rem' }}>
-            {currentDraft.tags.map(tag => (
+            {['Academic', 'Personal', 'Work'].map(tag => (
+              <span
+                key={tag}
+                onClick={() => handleTagToggle(tag)}
+                style={{
+                  display: 'inline-block',
+                  padding: '0.5rem 1rem',
+                  margin: '0.2rem',
+                  background: tags.includes(tag) ? '#bfdbfe' : '#e0f2fe',
+                  borderRadius: '12px',
+                  color: '#1e293b',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+            {currentDraft.tags.filter(tag => !['Academic', 'Personal', 'Work'].includes(tag)).map(tag => (
               <span key={tag} style={{
                 display: 'inline-block',
                 padding: '0.5rem 1rem',
@@ -239,7 +306,7 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
           </div>
           <div className="draft-actions">
             <button 
-              onClick={saveDraft}
+              onClick={handleSaveDraft}
               style={{
                 padding: '1rem',
                 background: 'linear-gradient(90deg, #06b6d4, #3b82f6)',
@@ -327,94 +394,40 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
               />
             </button>
           </div>
-          <div className="export-options">
-            <button 
+          <div className="export-options" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem' }}>
+            <button
               onClick={() => exportDraft(currentDraft.id, 'pdf')}
               style={{
-                padding: '1rem',
-                background: 'linear-gradient(90deg, #06b6d4, #3b82f6)',
-                color: 'white',
-                borderRadius: '12px',
-                fontSize: '1.2rem',
-                fontWeight: '700',
-                cursor: 'pointer',
-                marginBottom: '1.2rem',
-                transition: 'all 0.3s ease',
-                border: 'none',
-                boxShadow: '0 6px 12px rgba(59, 130, 246, 0.35)',
-                width: '100%',
-                maxWidth: '200px',
-                position: 'relative',
-                overflow: 'hidden',
+                ...buttonStyle,
+                background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(90deg, #0891b2, #2563eb)';
-                e.currentTarget.style.boxShadow = '0 8px 16px rgba(37, 99, 235, 0.5)';
-                e.currentTarget.style.transform = 'scale(1.02)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(220, 38, 38, 0.4)';
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(90deg, #06b6d4, #3b82f6)';
-                e.currentTarget.style.boxShadow = '0 6px 12px rgba(59, 130, 246, 0.35)';
-                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
               }}
             >
-              Export as PDF
-              <span 
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: '-100%',
-                  width: '100%',
-                  height: '100%',
-                  background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
-                  transition: '0.5s',
-                }}
-                onMouseOver={(e) => e.currentTarget.style.left = '100%'}
-              />
+              📕 PDF
             </button>
-            <button 
+            <button
               onClick={() => exportDraft(currentDraft.id, 'docx')}
               style={{
-                padding: '1rem',
-                background: 'linear-gradient(90deg, #06b6d4, #3b82f6)',
-                color: 'white',
-                borderRadius: '12px',
-                fontSize: '1.2rem',
-                fontWeight: '700',
-                cursor: 'pointer',
-                marginBottom: '1.2rem',
-                transition: 'all 0.3s ease',
-                border: 'none',
-                boxShadow: '0 6px 12px rgba(59, 130, 246, 0.35)',
-                width: '100%',
-                maxWidth: '200px',
-                position: 'relative',
-                overflow: 'hidden',
+                ...buttonStyle,
+                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(90deg, #0891b2, #2563eb)';
-                e.currentTarget.style.boxShadow = '0 8px 16px rgba(37, 99, 235, 0.5)';
-                e.currentTarget.style.transform = 'scale(1.02)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(37, 99, 235, 0.4)';
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(90deg, #06b6d4, #3b82f6)';
-                e.currentTarget.style.boxShadow = '0 6px 12px rgba(59, 130, 246, 0.35)';
-                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
               }}
             >
-              Export as DOCX
-              <span 
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: '-100%',
-                  width: '100%',
-                  height: '100%',
-                  background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
-                  transition: '0.5s',
-                }}
-                onMouseOver={(e) => e.currentTarget.style.left = '100%'}
-              />
+              📘 DOCX
             </button>
           </div>
         </div>
@@ -436,6 +449,9 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
               onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
                 <h3 style={{ margin: '0 0 0.5rem 0', color: '#1e293b' }}>{draft.title}</h3>
                 <p style={{ margin: '0 0 0.5rem 0', color: '#64748b' }}>{draft.content.substring(0, 100) || 'No content yet'}...</p>
+                <p style={{ margin: '0 0 0.5rem 0', color: '#64748b', fontSize: '0.8rem' }}>
+                  Last edited: {new Date(draft.lastEdited).toLocaleString()}
+                </p>
                 <div className="tags">
                   {draft.tags.map(tag => (
                     <span key={tag} style={{
@@ -482,7 +498,7 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
                     onClick={() => archiveDraft(draft.id)}
                     style={{
                       padding: '0.5rem 1rem',
-                      background: 'linear-gradient(90deg, #f87171, #ef4444)',
+                      background: 'linear-gradient(90deg, #10b981, #065f46)',
                       color: 'white',
                       borderRadius: '8px',
                       fontSize: '0.9rem',
@@ -490,16 +506,16 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
                       border: 'none',
-                      boxShadow: '0 4px 8px rgba(239, 68, 68, 0.3)',
+                      boxShadow: '0 4px 8px rgba(16, 185, 129, 0.3)',
                     }}
                     onMouseOver={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(90deg, #ef4444, #b91c1c)';
-                      e.currentTarget.style.boxShadow = '0 6px 12px rgba(185, 28, 28, 0.5)';
+                      e.currentTarget.style.background = 'linear-gradient(90deg, #059669, #047857)';
+                      e.currentTarget.style.boxShadow = '0 6px 12px rgba(6, 95, 70, 0.5)';
                       e.currentTarget.style.transform = 'scale(1.02)';
                     }}
                     onMouseOut={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(90deg, #f87171, #ef4444)';
-                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
+                      e.currentTarget.style.background = 'linear-gradient(90deg, #10b981, #065f46)';
+                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(16, 185, 129, 0.3)';
                       e.currentTarget.style.transform = 'scale(1)';
                     }}
                   >
