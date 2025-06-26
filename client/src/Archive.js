@@ -1,6 +1,28 @@
 import { useState, useEffect } from 'react';
 
 export default function Archive({ drafts, currentDraft, setDrafts, setCurrentDraft, isEditing, setIsEditing, editDraft, unarchiveDraft, deleteDraft }) {
+  const [tags, setTags] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterTag, setFilterTag] = useState('All');
+
+  useEffect(() => {
+    setTags(currentDraft.tags || []);
+  }, [currentDraft.tags]);
+
+  const handleTagToggle = (tag) => {
+    setTags(prev => 
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+    setCurrentDraft({ ...currentDraft, tags: tags.includes(tag) ? currentDraft.tags.filter(t => t !== tag) : [...currentDraft.tags, tag] });
+  };
+
+  const allTags = ['All', ...new Set(['Academic', 'Personal', 'Work', ...drafts.flatMap(d => d.tags)])];
+
+  const filteredDrafts = drafts
+    .filter(d => d.isArchived)
+    .filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()) || d.content.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter(d => filterTag === 'All' || d.tags.includes(filterTag));
+
   return (
     <div 
       className="writing-dashboard"
@@ -38,10 +60,42 @@ export default function Archive({ drafts, currentDraft, setDrafts, setCurrentDra
       >
         Archive
       </h2>
-      {drafts.filter(d => d.isArchived).length === 0 ? (
+      <div style={{ marginBottom: '1.5rem', width: '100%', display: 'flex', gap: '1rem' }}>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search drafts..."
+          style={{
+            padding: '0.8rem',
+            border: '2px solid #d1d5db',
+            borderRadius: '12px',
+            fontSize: '1rem',
+            width: '70%',
+            boxShadow: 'inset 0 2px 6px rgba(0, 0, 0, 0.05)',
+          }}
+        />
+        <select
+          value={filterTag}
+          onChange={(e) => setFilterTag(e.target.value)}
+          style={{
+            padding: '0.8rem',
+            border: '2px solid #d1d5db',
+            borderRadius: '12px',
+            fontSize: '1rem',
+            width: '30%',
+            boxShadow: 'inset 0 2px 6px rgba(0, 0, 0, 0.05)',
+          }}
+        >
+          {allTags.map(tag => (
+            <option key={tag} value={tag}>{tag}</option>
+          ))}
+        </select>
+      </div>
+      {filteredDrafts.length === 0 ? (
         <p style={{ textAlign: 'center', color: '#64748b' }}>No archived drafts available.</p>
       ) : (
-        drafts.filter(d => d.isArchived).map(draft => (
+        filteredDrafts.map(draft => (
           <div key={draft.id} style={{
             padding: '1rem',
             marginBottom: '1rem',
@@ -54,17 +108,27 @@ export default function Archive({ drafts, currentDraft, setDrafts, setCurrentDra
           onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
             <h3 style={{ margin: '0 0 0.5rem 0', color: '#1e293b' }}>{draft.title}</h3>
             <p style={{ margin: '0 0 0.5rem 0', color: '#64748b' }}>{draft.content.substring(0, 100) || 'No content yet'}...</p>
-            <div className="tags">
+            <p style={{ margin: '0 0 0.5rem 0', color: '#64748b', fontSize: '0.8rem' }}>
+              Last edited: {new Date(draft.lastEdited).toLocaleString()}
+            </p>
+            <div className="tags" style={{ marginBottom: '1rem' }}>
               {draft.tags.map(tag => (
-                <span key={tag} style={{
-                  display: 'inline-block',
-                  padding: '0.3rem 0.8rem',
-                  margin: '0.2rem',
-                  background: '#dbeafe',
-                  borderRadius: '8px',
-                  color: '#1e293b',
-                  fontSize: '0.8rem',
-                }}>{tag}</span>
+                <span
+                  key={tag}
+                  onClick={() => handleTagToggle(tag)}
+                  style={{
+                    display: 'inline-block',
+                    padding: '0.3rem 0.8rem',
+                    margin: '0.2rem',
+                    background: tags.includes(tag) ? '#bfdbfe' : '#dbeafe',
+                    borderRadius: '8px',
+                    color: '#1e293b',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {tag}
+                </span>
               ))}
             </div>
             <div className="draft-actions">
