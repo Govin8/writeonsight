@@ -5,6 +5,8 @@ import WritingDashboard from './WritingDashboard';
 import OCR from './OCR';
 import Archive from './Archive';
 import Profile from './Profile';
+import { auth, db } from './firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -18,8 +20,56 @@ export default function App() {
   const [currentDraft, setCurrentDraft] = useState({ id: null, title: '', content: '', tags: [], isArchived: false });
   const [isEditing, setIsEditing] = useState(false);
 
-  const handleLoginSuccess = ({ name, email }) => {
-    setUserProfile({ name, email, avatar: "https://via.placeholder.com/150" });
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        setLoggedIn(true);
+        const docRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setUserProfile(docSnap.data());
+        } else {
+          // Save default profile to Firestore
+          const newProfile = {
+            name: user.displayName || 'New user',
+            email: user.email,
+            avatar: 'https://via.placeholder.com/150',
+          };
+          await setDoc(docRef, newProfile);
+          setUserProfile(newProfile);
+        }
+      } else {
+        setLoggedIn(false);
+        setUserProfile({
+          name: '',
+          email: '',
+          avatar: 'https://via.placeholder.com/150',
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+const handleLoginSuccess = async ({ name, email }) => {
+    const user = auth.currentUser;
+    if (user) {
+      const docRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        setUserProfile(docSnap.data());
+      } else {
+        const newProfile = {
+          name: name || user.displayName || 'Anonymous',
+          email: email || user.email,
+          avatar: 'https://via.placeholder.com/150',
+        };
+        await setDoc(docRef, newProfile);
+        setUserProfile(newProfile);
+      }
+    }
   };
 
   const handleProfileChange = (e) => {
@@ -38,8 +88,21 @@ export default function App() {
     }
   };
 
-  const handleSaveChanges = () => {
-    alert("Profile updated successfully!");
+ const handleSaveChanges = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        await setDoc(doc(db, 'users', user.uid), {
+          name: userProfile.name,
+          email: userProfile.email,
+          avatar: userProfile.avatar,
+        });
+        alert('Profile updated and saved!');
+      } catch (error) {
+        console.error('Error saving profile:', error);
+        alert('Failed to save profile.');
+      }
+    }
   };
 
   const createDraft = () => {

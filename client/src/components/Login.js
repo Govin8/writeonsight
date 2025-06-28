@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { auth, googleProvider, facebookProvider, signInWithPopup } from '../firebase';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'; 
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase'; 
 
 export default function Login({ setLoggedIn, onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -8,25 +11,46 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLogin) {
-      if (users[email] === password) {
-        setLoggedIn(true);
-        onLoginSuccess({ name: users[email + '_name'], email });
-      } else {
-        alert("Incorrect email or password, or you haven't signed up yet.");
-      }
-    } else {
-      if (users[email]) {
-        alert("This email is already registered.");
-      } else {
-        setUsers({ ...users, [email]: password, [email + '_name']: name });
-        alert(`Signed up successfully as ${name}. Please log in now.`);
-        setIsLogin(true);
-      }
+    
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      setLoggedIn(true);
+      onLoginSuccess({ name: user.displayName || 'New user', email: user.email });
+
+    } catch (error) {
+      console.error("Login error:", error.message);
+      alert("Login failed. Please check your credentials.");
     }
-  };
+
+  } else {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      
+      await updateProfile(user, { displayName: name });
+
+      
+      await setDoc(doc(db, 'users', user.uid), {
+        name: name,
+        email: email,
+        avatar: 'https://via.placeholder.com/150',
+      });
+
+      alert(`Signed up successfully as ${name}. Please log in now.`);
+      setIsLogin(true); 
+
+    } catch (error) {
+      console.error("Signup error:", error.message);
+      alert("Sign up failed: " + error.message);
+    }
+  }
+};
 
   const onGoogleSignIn = () => {
     signInWithPopup(auth, googleProvider)
@@ -51,7 +75,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
       .catch((error) => {
         console.error("Facebook Sign-In Error:", error.message);
         alert("Facebook sign-in failed. Try again.");
-      });
+         });
   };
 
   return (
