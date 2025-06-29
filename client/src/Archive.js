@@ -132,34 +132,7 @@ export default function Archive({ drafts, currentDraft, setDrafts, setCurrentDra
               ))}
             </div>
             <div className="draft-actions">
-              <button 
-                onClick={() => editDraft(draft)}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: 'linear-gradient(90deg, #06b6d4, #3b82f6)',
-                  color: 'white',
-                  borderRadius: '8px',
-                  fontSize: '0.9rem',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  marginRight: '0.5rem',
-                  transition: 'all 0.3s ease',
-                  border: 'none',
-                  boxShadow: '0 4px 8px rgba(59, 130, 246, 0.3)',
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(90deg, #0891b2, #2563eb)';
-                  e.currentTarget.style.boxShadow = '0 6px 12px rgba(37, 99, 235, 0.5)';
-                  e.currentTarget.style.transform = 'scale(1.02)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(90deg, #06b6d4, #3b82f6)';
-                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(59, 130, 246, 0.3)';
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
-              >
-                Edit
-              </button>
+              
               <button 
                 onClick={() => unarchiveDraft(draft.id)}
                 style={{
