@@ -14,7 +14,6 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLogin) {
-    
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -32,10 +31,8 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      
       await updateProfile(user, { displayName: name });
 
-      
       await setDoc(doc(db, 'users', user.uid), {
         name: name,
         email: email,
@@ -140,7 +137,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
           }}
         >
           <img 
-            src="https://i.postimg.cc/jCLNDXkp/Whats-App-Image-2025-06-01-at-14-13-20.jpg"
+            src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"
             alt="Write On Sight Logo"
             style={{
               width: '100%',
