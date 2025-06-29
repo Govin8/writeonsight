@@ -137,7 +137,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
           }}
         >
           <img 
-            src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"
+            src="https://i.postimg.cc/jCLNDXkp/Whats-App-Image-2025-06-01-at-14-13-20.jpg"
             alt="Write On Sight Logo"
             style={{
               width: '100%',
