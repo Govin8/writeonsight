@@ -33,7 +33,6 @@ export default function ImageUpload() {
       });
   };
 
-  // Export as TXT
   const exportAsTxt = () => {
     if (!ocrText.trim()) {
       alert('No text to export. Please extract text from an image first.');
@@ -51,7 +50,6 @@ export default function ImageUpload() {
     URL.revokeObjectURL(url);
   };
 
-  // Export as PDF (using jsPDF)
   const exportAsPdf = async () => {
     if (!ocrText.trim()) {
       alert('No text to export. Please extract text from an image first.');
@@ -97,14 +95,13 @@ export default function ImageUpload() {
     try {
       setOcrStatus("Preparing DOCX export...");
       
-      // Create a simple DOCX-like file using RTF format which can be opened by Word
-      const rtfContent = `{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Times New Roman;}}\\f0\\fs24 ${ocrText.replace(/\n/g, '\\par ')}}`;
+      const docxContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>${ocrText.replace(/\n/g, '</w:t></w:r></w:p><w:p><w:r><w:t>')}</w:t></w:r></w:p></w:body></w:document>`;
       
-      const blob = new Blob([rtfContent], { type: 'application/rtf' });
+      const blob = new Blob([docxContent], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `extracted-text-${Date.now()}.rtf`;
+      a.download = `extracted-text-${Date.now()}.docx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -112,7 +109,6 @@ export default function ImageUpload() {
       
       setOcrStatus("Document export complete!");
       
-    
       setTimeout(() => {
         setOcrStatus("Upload an image to extract text.");
       }, 3000);
