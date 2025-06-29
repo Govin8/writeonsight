@@ -1,53 +1,50 @@
 import { useState } from 'react';
 import { auth, googleProvider, facebookProvider, signInWithPopup } from '../firebase';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'; 
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../firebase'; 
+import { db } from '../firebase';
 
 export default function Login({ setLoggedIn, onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
   const [users, setUsers] = useState({});
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLogin) {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-      setLoggedIn(true);
-      onLoginSuccess({ name: user.displayName || 'New user', email: user.email });
+        setLoggedIn(true);
+        onLoginSuccess({ name: user.displayName || 'New user', email: user.email });
+      } catch (error) {
+        console.error('Login error:', error.message);
+        alert('Login failed. Please check your credentials.');
+      }
+    } else {
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-    } catch (error) {
-      console.error("Login error:", error.message);
-      alert("Login failed. Please check your credentials.");
+        await updateProfile(user, { displayName: name });
+
+        await setDoc(doc(db, 'users', user.uid), {
+          name,
+          email,
+          avatar: 'https://via.placeholder.com/150',
+        });
+
+        alert(`Signed up successfully as ${name}. Please log in now.`);
+        setIsLogin(true);
+      } catch (error) {
+        console.error('Signup error:', error.message);
+        alert('Sign up failed: ' + error.message);
+      }
     }
-
-  } else {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      await updateProfile(user, { displayName: name });
-
-      await setDoc(doc(db, 'users', user.uid), {
-        name: name,
-        email: email,
-        avatar: 'https://via.placeholder.com/150',
-      });
-
-      alert(`Signed up successfully as ${name}. Please log in now.`);
-      setIsLogin(true); 
-
-    } catch (error) {
-      console.error("Signup error:", error.message);
-      alert("Sign up failed: " + error.message);
-    }
-  }
-};
+  };
 
   const onGoogleSignIn = () => {
     signInWithPopup(auth, googleProvider)
@@ -57,8 +54,8 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
         onLoginSuccess({ name: user.displayName, email: user.email });
       })
       .catch((error) => {
-        console.error("Google Sign-In Error:", error.message);
-        alert("Google sign-in failed. Try again.");
+        console.error('Google Sign-In Error:', error.message);
+        alert('Google sign-in failed. Try again.');
       });
   };
 
@@ -70,13 +67,13 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
         onLoginSuccess({ name: user.displayName, email: user.email });
       })
       .catch((error) => {
-        console.error("Facebook Sign-In Error:", error.message);
-        alert("Facebook sign-in failed. Try again.");
-         });
+        console.error('Facebook Sign-In Error:', error.message);
+        alert('Facebook sign-in failed. Try again.');
+      });
   };
 
   return (
-    <div 
+    <div
       className="login-wrapper"
       style={{
         height: '100vh',
@@ -88,7 +85,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
         fontFamily: "'Inter', 'Segoe UI', Arial, sans-serif",
       }}
     >
-      <div 
+      <div
         style={{
           position: 'absolute',
           top: 0,
@@ -100,7 +97,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
           zIndex: 0,
         }}
       />
-      <div 
+      <div
         className="left-section"
         style={{
           flex: 1,
@@ -111,7 +108,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
           zIndex: 1,
         }}
       >
-        <div 
+        <div
           className="logo-container"
           style={{
             display: 'flex',
@@ -136,7 +133,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
             e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.15), inset 0 0 10px rgba(255, 255, 255, 0.1)';
           }}
         >
-          <img 
+          <img
             src="https://i.postimg.cc/jCLNDXkp/Whats-App-Image-2025-06-01-at-14-13-20.jpg"
             alt="Write On Sight Logo"
             style={{
@@ -147,7 +144,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
           />
         </div>
       </div>
-      <div 
+      <div
         className="right-section"
         style={{
           flex: 1,
@@ -158,7 +155,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
           zIndex: 1,
         }}
       >
-        <div 
+        <div
           className="container login-box"
           style={{
             background: 'rgba(255, 255, 255, 0.15)',
@@ -184,7 +181,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
             e.currentTarget.style.boxShadow = '0 16px 40px rgba(0, 0, 0, 0.2), inset 0 0 15px rgba(255, 255, 255, 0.1)';
           }}
         >
-          <h2 
+          <h2
             style={{
               marginBottom: '2rem',
               fontSize: '2rem',
@@ -199,9 +196,9 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
               textShadow: '0 2px 8px rgba(139, 92, 246, 0.3)',
             }}
           >
-            {isLogin ? "Login to Write On Sight" : "Join Write On Sight"}
+            {isLogin ? 'Login to Write On Sight' : 'Join Write On Sight'}
           </h2>
-          <div 
+          <div
             style={{
               display: 'flex',
               flexDirection: 'column',
@@ -307,8 +304,8 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
                 e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
               }}
             />
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={handleSubmit}
               style={{
                 padding: '1rem 2rem',
@@ -352,8 +349,8 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
                 setTimeout(() => ripple.remove(), 600);
               }}
             >
-              {isLogin ? "Login" : "Sign Up"}
-              <span 
+              {isLogin ? 'Login' : 'Sign Up'}
+              <span
                 style={{
                   position: 'absolute',
                   top: 0,
@@ -363,14 +360,14 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
                   background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
                   transition: '0.5s',
                 }}
-                onMouseOver={(e) => e.currentTarget.style.left = '100%'}
+                onMouseOver={(e) => (e.currentTarget.style.left = '100%')}
               />
             </button>
             {isLogin && (
               <>
-                <button 
-                  type="button" 
-                  className="social-btn facebook" 
+                <button
+                  type="button"
+                  className="social-btn facebook"
                   onClick={onFacebookSignIn}
                   style={{
                     background: 'linear-gradient(90deg, #3b5998, #4f74c8)',
@@ -416,14 +413,23 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
                     setTimeout(() => ripple.remove(), 600);
                   }}
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22 12C22 6.48 17.52 2 12 2S2 6.48 2 12c0 5.02 3.66 9.16 8.44 9.88v-6.98h-2.54v-2.9h2.54V9.56c0-2.52 1.5-3.9 3.8-3.9 1.1 0 2.26.2 2.26.2v2.48h-1.27c-1.25 0-1.64.78-1.64 1.58v1.98h2.8l-.45 2.9h-2.35v6.98C18.34 21.16 22 17.02 22 12z" fill="white"/>
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M22 12C22 6.48 17.52 2 12 2S2 6.48 2 12c0 5.02 3.66 9.16 8.44 9.88v-6.98h-2.54v-2.9h2.54V9.56c0-2.52 1.5-3.9 3.8-3.9 1.1 0 2.26.2 2.26.2v2.48h-1.27c-1.25 0-1.64.78-1.64 1.58v1.98h2.8l-.45 2.9h-2.35v6.98C18.34 21.16 22 17.02 22 12z"
+                      fill="white"
+                    />
                   </svg>
                   Sign in with Facebook
                 </button>
-                <button 
-                  type="button" 
-                  className="social-btn google" 
+                <button
+                  type="button"
+                  className="social-btn google"
                   onClick={onGoogleSignIn}
                   style={{
                     background: 'linear-gradient(90deg, #4285f4, #34A853)',
@@ -468,15 +474,24 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
                     setTimeout(() => ripple.remove(), 600);
                   }}
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M21.805 10.023h-.945c-.614 0-1.215.05-1.805.147-.59.097-1.15.24-1.675.428-.525.188-1.015.415-1.47.683-.455.268-.87.567-1.245.897-.375.33-.695.69-.96 1.08-.265.39-.475.805-.63 1.245-.155.44-.24.905-.255 1.395-.015.49.055.975.21 1.455.155.48.405.935.75 1.365.345.43.775.815 1.29 1.155.515.34 1.095.62 1.74.84.645.22 1.33.33 2.055.33.72 0 1.405-.105 2.055-.315.65-.21 1.23-.495 1.74-.855.51-.36.935-.775 1.275-1.245.34-.47.59-.965.75-1.485.16-.52.24-1.055.24-1.605 0-.55-.08-1.085-.24-1.605-.16-.52-.41-1.015-.75-1.485-.34-.47-.765-.885-1.275-1.245-.51-.36-1.09-.645-1.74-.855-.65-.21-1.335-.315-2.055-.315zm-1.305 5.19c-.165.465-.405.885-.72 1.26-.315.375-.69.705-1.125.99-.435.285-.915.51-1.44.675-.525.165-1.08.245-1.665.245-.585 0-1.14-.08-1.665-.245-.525-.165-1.005-.39-1.44-.675-.435-.285-.81-.615-1.125-.99-.315-.375-.555-.795-.72-1.26-.165-.465-.245-.945-.245-1.425 0-.48.08-.96.245-1.425.165-.465.405-.885.72-1.26.315-.375.69-.705 1.125-.99.435-.285.915-.51 1.44-.675.525-.165 1.08-.245 1.665-.245.585 0 1.14.08 1.665.245.525.165 1.005.39 1.44.675.435.285.81.615 1.125.99.315.375.555.795.72 1.26.165.465.245.945.245 1.425 0 .48-.08.96-.245 1.425zm-8.49-5.19h-1.89v3.78h-3.78v1.89h3.78v3.78h1.89v-3.78h3.78v-1.89h-3.78v-3.78zm-6.615 0h-1.89v9.45h1.89v-9.45z" fill="white"/>
-                  </svg>
+                  <a href="https://postimages.org/" target="_blank">
+                    <img
+                      src="https://i.postimg.cc/26bM5kL4/temp-Imagesuw4-Ky.avif"
+                      border="0"
+                      alt="temp-Imagesuw4-Ky"
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        display: 'block',
+                      }}
+                    />
+                  </a>
                   Sign in with Google
                 </button>
               </>
             )}
           </div>
-          <div 
+          <div
             className="switch"
             style={{
               textAlign: 'center',
@@ -487,43 +502,53 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
             }}
           >
             {isLogin ? (
-              <>Don't have an account? <a 
-                href="#" 
-                onClick={() => setIsLogin(false)}
-                style={{
-                  color: '#8b5cf6',
-                  textDecoration: 'none',
-                  fontWeight: '700',
-                  transition: 'all 0.3s ease',
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.color = '#a78bfa';
-                  e.currentTarget.style.textDecoration = 'underline';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.color = '#8b5cf6';
-                  e.currentTarget.style.textDecoration = 'none';
-                }}
-              >Sign Up</a></>
+              <>
+                Don't have an account?{' '}
+                <a
+                  href="#"
+                  onClick={() => setIsLogin(false)}
+                  style={{
+                    color: '#8b5cf6',
+                    textDecoration: 'none',
+                    fontWeight: '700',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.color = '#a78bfa';
+                    e.currentTarget.style.textDecoration = 'underline';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.color = '#8b5cf6';
+                    e.currentTarget.style.textDecoration = 'none';
+                  }}
+                >
+                  Sign Up
+                </a>
+              </>
             ) : (
-              <>Already have an account? <a 
-                href="#" 
-                onClick={() => setIsLogin(true)}
-                style={{
-                  color: '#8b5cf6',
-                  textDecoration: 'none',
-                  fontWeight: '700',
-                  transition: 'all 0.3s ease',
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.color = '#a78bfa';
-                  e.currentTarget.style.textDecoration = 'underline';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.color = '#8b5cf6';
-                  e.currentTarget.style.textDecoration = 'none';
-                }}
-              >Login</a></>
+              <>
+                Already have an account?{' '}
+                <a
+                  href="#"
+                  onClick={() => setIsLogin(true)}
+                  style={{
+                    color: '#8b5cf6',
+                    textDecoration: 'none',
+                    fontWeight: '700',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.color = '#a78bfa';
+                    e.currentTarget.style.textDecoration = 'underline';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.color = '#8b5cf6';
+                    e.currentTarget.style.textDecoration = 'none';
+                  }}
+                >
+                  Login
+                </a>
+              </>
             )}
           </div>
         </div>
