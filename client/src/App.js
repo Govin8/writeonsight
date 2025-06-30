@@ -30,7 +30,6 @@ export default function App() {
         if (docSnap.exists()) {
           setUserProfile(docSnap.data());
         } else {
-          // Save default profile to Firestore
           const newProfile = {
             name: user.displayName || 'New user',
             email: user.email,
