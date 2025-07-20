@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
+import { saveAs } from 'file-saver';
 
 export default function WritingDashboard({ drafts, currentDraft, setDrafts, setCurrentDraft, isEditing, setIsEditing, createDraft, saveDraft, editDraft, addTag, deleteDraft, archiveDraft, exportDraft }) {
   const [tags, setTags] = useState(currentDraft.tags || []);
@@ -27,6 +29,72 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
     saveDraft(updatedDraft);
     setCurrentDraft(updatedDraft);
     setDrafts(drafts.map(d => d.id === updatedDraft.id ? updatedDraft : d));
+  };
+
+  const exportAsPdf = async () => {
+    if (!currentDraft.content.trim()) {
+      alert('No text to export. Please add content to the draft first.');
+      return;
+    }
+
+    try {
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      const maxLineWidth = pageWidth - 2 * margin;
+      const lineHeight = 10;
+      
+      const lines = doc.splitTextToSize(currentDraft.content, maxLineWidth);
+      
+      let y = margin;
+      lines.forEach((line) => {
+        if (y > doc.internal.pageSize.getHeight() - margin) {
+          doc.addPage();
+          y = margin;
+        }
+        doc.text(line, margin, y);
+        y += lineHeight;
+      });
+      
+      const sanitizedTitle = currentDraft.title.replace(/[^a-zA-Z0-9-_]/g, '_');
+      doc.save(`${sanitizedTitle}.pdf`);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      alert('Error exporting PDF. Please try again.');
+    }
+  };
+
+  const exportAsDocx = async () => {
+    if (!currentDraft.content.trim()) {
+      alert('No text to export. Please add content to the draft first.');
+      return;
+    }
+
+    try {
+      const paragraphs = currentDraft.content
+        .split('\n')
+        .map((line) =>
+          new Paragraph({
+            children: [new TextRun(line)],
+          })
+        );
+
+      const doc = new Document({
+        sections: [
+          {
+            children: paragraphs,
+          },
+        ],
+      });
+
+      const blob = await Packer.toBlob(doc);
+      const sanitizedTitle = currentDraft.title.replace(/[^a-zA-Z0-9-_]/g, '_');
+      saveAs(blob, `${sanitizedTitle}.docx`);
+    } catch (error) {
+      console.error('Error exporting DOCX:', error);
+      alert(`Error exporting document: ${error.message}`);
+    }
   };
 
   const buttonStyle = {
@@ -396,7 +464,7 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
           </div>
           <div className="export-options" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem' }}>
             <button
-              onClick={() => exportDraft(currentDraft.id, 'pdf')}
+              onClick={exportAsPdf}
               style={{
                 ...buttonStyle,
                 background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
@@ -413,7 +481,7 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
               📕 PDF
             </button>
             <button
-              onClick={() => exportDraft(currentDraft.id, 'docx')}
+              onClick={exportAsDocx}
               style={{
                 ...buttonStyle,
                 background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
@@ -555,6 +623,26 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
           )}
         </div>
       )}
+      <style>
+        {`
+          @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+          .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            width: 100%;
+          }
+          .draft-actions {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+          }
+        `}
+      </style>
     </div>
   );
 }
