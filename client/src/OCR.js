@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import Tesseract from 'tesseract.js';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
+import { saveAs } from 'file-saver';
 
 export default function OCR({ currentPage, setCurrentPage }) {
   const [ocrText, setOcrText] = useState("");
@@ -83,7 +85,7 @@ export default function OCR({ currentPage, setCurrentPage }) {
     }
   };
 
-  const exportAsDocx = () => {
+  const exportAsDocx = async () => {
     if (!ocrText.trim()) {
       alert('No text to export. Please extract text from an image first.');
       return;
@@ -91,27 +93,32 @@ export default function OCR({ currentPage, setCurrentPage }) {
 
     try {
       setOcrStatus("Preparing DOCX export...");
-      
-      const docxContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>${ocrText.replace(/\n/g, '</w:t></w:r></w:p><w:p><w:r><w:t>')}</w:t></w:r></w:p></w:body></w:document>`;
-      
-      const blob = new Blob([docxContent], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `extracted-text-${Date.now()}.docx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
+
+      const paragraphs = ocrText
+        .split('\n')
+        .map((line) =>
+          new Paragraph({
+            children: [new TextRun(line)],
+          })
+        );
+
+      const doc = new Document({
+        sections: [
+          {
+            children: paragraphs,
+          },
+        ],
+      });
+
+      const blob = await Packer.toBlob(doc);
+      saveAs(blob, `extracted-text-${Date.now()}.docx`);
+
       setOcrStatus("Document export complete!");
-      
       setTimeout(() => {
         setOcrStatus("Upload an image to extract text.");
       }, 3000);
-      
     } catch (error) {
-      console.error('Error exporting document:', error);
+      console.error('Error exporting DOCX:', error);
       setOcrStatus("Failed to export document.");
       alert(`Error exporting document: ${error.message}`);
     }
