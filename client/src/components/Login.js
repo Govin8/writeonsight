@@ -10,39 +10,60 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [error, setError] = useState('');
+
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePassword = (password) => password.length >= 6;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isLogin) {
-      try {
+    setError(''); 
+
+    if (!email.trim()) {
+      setError('Email is required.');
+      return;
+    }
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    if (!password.trim()) {
+      setError('Password is required.');
+      return;
+    }
+    if (!isLogin && !name.trim()) {
+      setError('Name is required for sign up.');
+      return;
+    }
+    if (!isLogin && !validatePassword(password)) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    try {
+      if (isLogin) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-
         setLoggedIn(true);
         onLoginSuccess({ name: user.displayName || 'New user', email: user.email });
-      } catch (error) {
-        console.error('Login error:', error.message);
-        alert('Login failed. Please check your credentials.');
-      }
-    } else {
-      try {
+      } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-
         await updateProfile(user, { displayName: name });
-
         await setDoc(doc(db, 'users', user.uid), {
           name,
           email,
           avatar: 'https://via.placeholder.com/150',
         });
-
         alert(`Signed up successfully as ${name}. Please log in now.`);
         setIsLogin(true);
-      } catch (error) {
-        console.error('Signup error:', error.message);
-        alert('Sign up failed: ' + error.message);
       }
+    } catch (error) {
+      console.error(`${isLogin ? 'Login' : 'Signup'} error:`, error.message);
+      setError(error.message.includes('wrong-password') ? 'Incorrect email or password.' :
+                error.message.includes('user-not-found') ? 'No account found with this email.' :
+                error.message.includes('email-already-in-use') ? 'This email is already registered.' :
+                'An error occurred. Please try again.');
     }
   };
 
@@ -55,7 +76,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
       })
       .catch((error) => {
         console.error('Google Sign-In Error:', error.message);
-        alert('Google sign-in failed. Try again.');
+        setError('Google sign-in failed. Please try again.');
       });
   };
 
@@ -68,7 +89,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
       })
       .catch((error) => {
         console.error('Facebook Sign-In Error:', error.message);
-        alert('Facebook sign-in failed. Try again.');
+        setError('Facebook sign-in failed. Please try again.');
       });
   };
 
@@ -198,7 +219,28 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
           >
             {isLogin ? 'Login to Write On Sight' : 'Join Write On Sight'}
           </h2>
-          <div
+          {error && (
+            <div
+              style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                color: '#ef4444',
+                padding: '0.75rem 1rem',
+                borderRadius: '10px',
+                marginBottom: '1.5rem',
+                width: '100%',
+                textAlign: 'center',
+                fontSize: '0.95rem',
+                fontWeight: '500',
+                border: '1px solid rgba(239, 68, 68, 0.5)',
+                animation: 'slideInError 0.5s ease-out',
+                boxShadow: '0 2px 6px rgba(239, 68, 68, 0.2)',
+              }}
+            >
+              {error}
+            </div>
+          )}
+          <form
+            onSubmit={handleSubmit}
             style={{
               display: 'flex',
               flexDirection: 'column',
@@ -305,8 +347,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
               }}
             />
             <button
-              type="button"
-              onClick={handleSubmit}
+              type="submit"
               style={{
                 padding: '1rem 2rem',
                 background: 'linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6)',
@@ -490,7 +531,7 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
                 </button>
               </>
             )}
-          </div>
+          </form>
           <div
             className="switch"
             style={{
@@ -581,6 +622,10 @@ export default function Login({ setLoggedIn, onLoginSuccess }) {
           @keyframes ripple {
             0% { transform: scale(0); opacity: 1; }
             100% { transform: scale(4); opacity: 0; }
+          }
+          @keyframes slideInError {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
           }
           @keyframes fadeIn {
             0% { opacity: 0; }
