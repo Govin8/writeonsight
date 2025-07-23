@@ -2,6 +2,8 @@ import { useState } from 'react';
 import Tesseract from 'tesseract.js';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { saveAs } from 'file-saver';
+import axios from 'axios';
+
 
 export default function OCR({ currentPage, setCurrentPage }) {
   const [ocrText, setOcrText] = useState("");
@@ -11,6 +13,47 @@ export default function OCR({ currentPage, setCurrentPage }) {
     setOcrText("");
     setOcrStatus("Upload an image to extract text.");
   };
+
+ const handleAutoCorrect = async () => {
+  if (!ocrText.trim()) {
+    alert('No text to correct.');
+    return;
+  }
+
+  setOcrStatus("Correcting grammar and spelling...");
+
+  try {
+    const response = await axios.post("https://api.languagetool.org/v2/check", null, {
+      params: {
+        text: ocrText,
+        language: "en-US",
+      },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      }
+    });
+
+    let correctedText = ocrText;
+    let offset = 0;
+
+    for (const match of response.data.matches) {
+      if (match.replacements.length > 0) {
+        const replacement = match.replacements[0].value;
+        const start = match.offset + offset;
+        const end = start + match.length;
+
+        correctedText = correctedText.slice(0, start) + replacement + correctedText.slice(end);
+        offset += replacement.length - match.length;
+      }
+    }
+
+    setOcrText(correctedText);
+    setOcrStatus("Text corrected!");
+  } catch (error) {
+    console.error("Correction failed:", error);
+    setOcrStatus("Failed to correct text.");
+  }
+};
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -302,6 +345,25 @@ export default function OCR({ currentPage, setCurrentPage }) {
         >
           📄 TXT
         </button>
+
+<button
+  onClick={handleAutoCorrect}
+  style={{
+    ...buttonStyle,
+    background: 'linear-gradient(135deg, #f59e0b, #d97706)', // orange
+  }}
+  onMouseOver={(e) => {
+    e.currentTarget.style.transform = 'translateY(-2px)';
+    e.currentTarget.style.boxShadow = '0 6px 16px rgba(245, 158, 11, 0.4)';
+  }}
+  onMouseOut={(e) => {
+    e.currentTarget.style.transform = 'translateY(0)';
+    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+  }}
+>
+  ✨ Auto-Correct
+</button>
+
         
         <button
           onClick={exportAsPdf}
