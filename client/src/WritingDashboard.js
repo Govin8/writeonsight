@@ -1,20 +1,59 @@
 import { useState, useEffect } from 'react';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { saveAs } from 'file-saver';
+import { doc, setDoc, collection, getDocs, query, where, deleteDoc } from 'firebase/firestore';
+import { db, auth } from './firebase';
+import { v4 as uuidv4 } from 'uuid';
 
-export default function WritingDashboard({ drafts, currentDraft, setDrafts, setCurrentDraft, isEditing, setIsEditing, createDraft, saveDraft, editDraft, addTag, deleteDraft, archiveDraft, exportDraft }) {
+export default function WritingDashboard({
+  drafts,
+  currentDraft,
+  setDrafts,
+  setCurrentDraft,
+  isEditing,
+  setIsEditing,
+  createDraft,
+  saveDraft,
+  editDraft,
+  addTag,
+  deleteDraft,
+  archiveDraft,
+  exportDraft,
+  unarchiveDraft,
+}) {
   const [tags, setTags] = useState(currentDraft.tags || []);
   const [newTag, setNewTag] = useState('');
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [archiveError, setArchiveError] = useState(null);
 
   useEffect(() => {
     setTags(currentDraft.tags || []);
+    fetchArchivedDrafts();
   }, [currentDraft.tags]);
 
+  const fetchArchivedDrafts = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+      const q = query(collection(db, 'users', user.uid, 'drafts'), where('isArchived', '==', true));
+      const querySnapshot = await getDocs(q);
+      const archivedDrafts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setDrafts(prevDrafts => [...prevDrafts.filter(d => !d.isArchived), ...archivedDrafts]);
+    } catch (error) {
+      console.error('Error fetching archived drafts:', error);
+    }
+  };
+
   const handleTagToggle = (tag) => {
-    setTags(prev => 
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    setTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
-    setCurrentDraft({ ...currentDraft, tags: tags.includes(tag) ? currentDraft.tags.filter(t => t !== tag) : [...currentDraft.tags, tag] });
+    setCurrentDraft({
+      ...currentDraft,
+      tags: tags.includes(tag)
+        ? currentDraft.tags.filter((t) => t !== tag)
+        : [...currentDraft.tags, tag],
+    });
   };
 
   const handleAddNewTag = (e) => {
@@ -24,11 +63,127 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
     }
   };
 
-  const handleSaveDraft = () => {
-    const updatedDraft = { ...currentDraft, tags, lastEdited: new Date().toISOString() };
-    saveDraft(updatedDraft);
-    setCurrentDraft(updatedDraft);
-    setDrafts(drafts.map(d => d.id === updatedDraft.id ? updatedDraft : d));
+ const handleSaveDraft = () => {
+  const user = auth.currentUser;
+  if (!user) {
+    console.error('User is not signed in.');
+    return;
+  }
+
+  const newDocRef = doc(collection(db, 'temp'));
+  const generatedId = newDocRef.id;
+
+  const updatedDraft = {
+    ...currentDraft,
+    tags,
+    title: currentDraft.title || 'Untitled Draft',
+    content: currentDraft.content || '',
+    lastEdited: new Date().toISOString(),
+    id: currentDraft.id || generatedId,
+    isArchived: false,
+  };
+
+  saveDraft(updatedDraft);
+  setCurrentDraft(updatedDraft);
+  setDrafts(drafts.map(d => d.id === updatedDraft.id ? updatedDraft : d));
+
+  const draftRef = doc(db, 'users', user.uid.toString(), 'drafts', updatedDraft.id.toString());
+  setDoc(draftRef, updatedDraft, { merge: true })
+    .then(() => console.log('Draft saved to Firestore with ID:', updatedDraft.id))
+    .catch(error => console.error('Error saving draft to Firestore:', error));
+};
+
+  const saveDraftToFirestore = async (draft, newId = null) => {
+    const user = auth.currentUser;
+    if (!user) {
+      setArchiveError('You must be signed in to archive this draft.');
+      setIsArchiving(false);
+      return;
+    }
+
+    const draftId = newId || draft.id;
+    if (!draftId) {
+      setArchiveError('Draft must have a valid ID before saving.');
+      setIsArchiving(false);
+      return;
+    }
+
+    const draftToSave = {
+      ...draft,
+      id: draftId,
+      isArchived: true,
+      lastEdited: new Date().toISOString(),
+    };
+
+    try {
+      const draftRef = doc(db, 'users', user.uid, 'drafts', draftId);
+      await setDoc(draftRef, draftToSave, { merge: true });
+      console.log('Draft archived to Firestore successfully with ID:', draftId);
+      setArchiveError(null);
+    } catch (error) {
+      console.error('Error saving to Firestore:', error);
+      setArchiveError(
+        error.code === 'permission-denied'
+          ? 'You do not have permission to archive this draft. Check Firestore rules.'
+          : error.message.includes('deadline-exceeded')
+          ? 'Network timeout. Please check your internet connection.'
+          : 'Failed to archive draft to cloud.'
+      );
+    } finally {
+      setIsArchiving(false);
+    }
+  };
+
+  const handleArchiveDraft = async (draftId) => {
+    setIsArchiving(true);
+    setArchiveError(null);
+    try {
+      const draftToArchive = drafts.find((d) => d.id === draftId);
+      if (!draftToArchive) {
+        throw new Error('Draft not found.');
+      }
+
+      const newDraftId = (draftToArchive.id && typeof draftToArchive.id === 'string') ? draftToArchive.id : uuidv4();
+      const updatedDraft = { ...draftToArchive, id: newDraftId };
+      await archiveDraft(draftId);
+      await saveDraftToFirestore(updatedDraft, newDraftId);
+
+      setDrafts(
+        drafts.map((d) =>
+          d.id === draftId ? { ...d, id: newDraftId, isArchived: true } : d
+        )
+      );
+      setCurrentDraft(updatedDraft);
+    } catch (error) {
+      console.error('Error archiving draft:', error);
+      setArchiveError('An error occurred while archiving the draft.');
+      setIsArchiving(false);
+    }
+  };
+
+  const handleUnarchiveDraft = async (draftId) => {
+    try {
+      const draftToUnarchive = drafts.find((d) => d.id === draftId);
+      if (!draftToUnarchive) {
+        throw new Error('Draft not found.');
+      }
+
+      const updatedDraft = { ...draftToUnarchive, isArchived: false, lastEdited: new Date().toISOString() };
+      const draftRef = doc(db, 'users', auth.currentUser.uid, 'drafts', draftId);
+      await setDoc(draftRef, updatedDraft, { merge: true });
+      console.log('Draft unarchived in Firestore with ID:', draftId);
+
+      await deleteDoc(draftRef);
+      console.log('Archived draft deleted from Firestore with ID:', draftId);
+
+      unarchiveDraft(draftId);
+      setDrafts(prevDrafts => [...prevDrafts.filter(d => d.id !== draftId), updatedDraft]); 
+      setCurrentDraft(updatedDraft);
+      setIsEditing(true); 
+    } catch (error) {
+      console.error('Error unarchiving draft:', error);
+      setArchiveError('An error occurred while unarchiving the draft.');
+    }
   };
 
   const exportAsPdf = async () => {
@@ -150,7 +305,7 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
       </h2>
       <div className="action-buttons" style={{ marginBottom: '2.5rem' }}>
         <button 
-          onClick={createDraft}
+          onClick={() => createDraft({ title: 'Untitled Draft', content: '', lastEdited: new Date().toISOString(), tags: [], id: doc(collection(db, 'temp')).id })}
           style={{
             padding: '1rem',
             background: 'linear-gradient(90deg, #06b6d4, #3b82f6)',
@@ -240,7 +395,7 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
         <div className="draft-editor" style={{ width: '100%', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <input
             type="text"
-            value={currentDraft.title}
+            value={currentDraft.title || ''}
             onChange={(e) => setCurrentDraft({ ...currentDraft, title: e.target.value })}
             placeholder="Draft Title"
             style={{
@@ -271,7 +426,7 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
             }}
           />
           <textarea
-            value={currentDraft.content}
+            value={currentDraft.content || ''}
             onChange={(e) => setCurrentDraft({ ...currentDraft, content: e.target.value })}
             placeholder="Start writing..."
             style={{
@@ -515,10 +670,10 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
               }}
               onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
               onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
-                <h3 style={{ margin: '0 0 0.5rem 0', color: '#1e293b' }}>{draft.title}</h3>
+                <h3 style={{ margin: '0 0 0.5rem 0', color: '#1e293b' }}>{draft.title || 'Untitled Draft'}</h3>
                 <p style={{ margin: '0 0 0.5rem 0', color: '#64748b' }}>{draft.content.substring(0, 100) || 'No content yet'}...</p>
                 <p style={{ margin: '0 0 0.5rem 0', color: '#64748b', fontSize: '0.8rem' }}>
-                  Last edited: {new Date(draft.lastEdited).toLocaleString()}
+                  Last edited: {draft.lastEdited ? new Date(draft.lastEdited).toLocaleString() : 'Never'}
                 </p>
                 <div className="tags">
                   {draft.tags.map(tag => (
@@ -563,31 +718,36 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
                     Edit
                   </button>
                   <button 
-                    onClick={() => archiveDraft(draft.id)}
+                    onClick={() => handleArchiveDraft(draft.id)}
                     style={{
                       padding: '0.5rem 1rem',
-                      background: 'linear-gradient(90deg, #10b981, #065f46)',
-                      color: 'white',
+                      background: isArchiving ? '#d1d5db' : 'linear-gradient(90deg, #10b981, #065f46)',
+                      color: isArchiving ? '#64748b' : 'white',
                       borderRadius: '8px',
                       fontSize: '0.9rem',
                       fontWeight: '700',
-                      cursor: 'pointer',
+                      cursor: isArchiving ? 'not-allowed' : 'pointer',
                       transition: 'all 0.3s ease',
                       border: 'none',
-                      boxShadow: '0 4px 8px rgba(16, 185, 129, 0.3)',
+                      boxShadow: isArchiving ? 'none' : '0 4px 8px rgba(16, 185, 129, 0.3)',
                     }}
+                    disabled={isArchiving}
                     onMouseOver={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(90deg, #059669, #047857)';
-                      e.currentTarget.style.boxShadow = '0 6px 12px rgba(6, 95, 70, 0.5)';
-                      e.currentTarget.style.transform = 'scale(1.02)';
+                      if (!isArchiving) {
+                        e.currentTarget.style.background = 'linear-gradient(90deg, #059669, #047857)';
+                        e.currentTarget.style.boxShadow = '0 6px 12px rgba(6, 95, 70, 0.5)';
+                        e.currentTarget.style.transform = 'scale(1.02)';
+                      }
                     }}
                     onMouseOut={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(90deg, #10b981, #065f46)';
-                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(16, 185, 129, 0.3)';
-                      e.currentTarget.style.transform = 'scale(1)';
+                      if (!isArchiving) {
+                        e.currentTarget.style.background = 'linear-gradient(90deg, #10b981, #065f46)';
+                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(16, 185, 129, 0.3)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }
                     }}
                   >
-                    Archive
+                    {isArchiving ? 'Archiving...' : 'Archive'}
                   </button>
                   <button 
                     onClick={() => deleteDraft(draft.id)}
@@ -618,6 +778,11 @@ export default function WritingDashboard({ drafts, currentDraft, setDrafts, setC
                     Delete
                   </button>
                 </div>
+                {archiveError && (
+                  <p style={{ color: '#ef4444', fontSize: '0.9rem', textAlign: 'center', marginTop: '0.5rem' }}>
+                    {archiveError}
+                  </p>
+                )}
               </div>
             ))
           )}
