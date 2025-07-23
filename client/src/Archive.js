@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { db, auth } from './firebase';
 
 export default function Archive({ drafts, currentDraft, setDrafts, setCurrentDraft, isEditing, setIsEditing, editDraft, unarchiveDraft, deleteDraft }) {
   const [tags, setTags] = useState([]);
@@ -22,6 +24,55 @@ export default function Archive({ drafts, currentDraft, setDrafts, setCurrentDra
     .filter(d => d.isArchived)
     .filter(d => d.title.toLowerCase().includes(searchQuery.toLowerCase()) || d.content.toLowerCase().includes(searchQuery.toLowerCase()))
     .filter(d => filterTag === 'All' || d.tags.includes(filterTag));
+
+  const handleUnarchiveDraft = async (draftId) => {
+    try {
+      const draftToUnarchive = drafts.find((d) => d.id === draftId);
+      if (!draftToUnarchive) {
+        throw new Error('Draft not found.');
+      }
+
+      const updatedDraft = { ...draftToUnarchive, isArchived: false, lastEdited: new Date().toISOString() };
+      const draftRef = doc(db, 'users', auth.currentUser.uid, 'drafts', draftId);
+      await setDoc(draftRef, updatedDraft, { merge: true });
+      console.log('Draft unarchived in Firestore with ID:', draftId);
+
+      await deleteDoc(draftRef);
+      console.log('Archived draft deleted from Firestore with ID:', draftId);
+
+      unarchiveDraft(draftId);
+      setDrafts(prevDrafts => [...prevDrafts.filter(d => d.id !== draftId), updatedDraft]);
+      setCurrentDraft(updatedDraft);
+      setIsEditing(true);
+    } catch (error) {
+      console.error('Error unarchiving draft:', error);
+      alert('Error unarchiving draft. Please try again.');
+    }
+  };
+
+  const handleDeleteDraft = async (draftId) => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('No authenticated user found.');
+      }
+
+      const draftRef = doc(db, 'users', auth.currentUser.uid, 'drafts', draftId);
+      await deleteDoc(draftRef);
+      console.log('Draft deleted from Firestore with ID:', draftId);
+      setDrafts(prevDrafts => prevDrafts.filter(d => d.id !== draftId));
+      if (currentDraft.id === draftId) {
+        setCurrentDraft(null); 
+        setIsEditing(false);
+      }
+
+      if (deleteDraft) {
+        deleteDraft(draftId);
+      }
+    } catch (error) {
+      console.error('Error deleting draft:', error);
+      alert('Error deleting draft. Please try again.');
+    }
+  };
 
   return (
     <div 
@@ -132,9 +183,8 @@ export default function Archive({ drafts, currentDraft, setDrafts, setCurrentDra
               ))}
             </div>
             <div className="draft-actions">
-              
               <button 
-                onClick={() => unarchiveDraft(draft.id)}
+                onClick={() => handleUnarchiveDraft(draft.id)}
                 style={{
                   padding: '0.5rem 1rem',
                   background: 'linear-gradient(90deg, #22c55e, #16a34a)',
@@ -161,12 +211,12 @@ export default function Archive({ drafts, currentDraft, setDrafts, setCurrentDra
                 Unarchive
               </button>
               <button 
-                onClick={() => deleteDraft(draft.id)}
+                onClick={() => handleDeleteDraft(draft.id)}
                 style={{
                   padding: '0.5rem 1rem',
                   background: 'linear-gradient(90deg, #f87171, #ef4444)',
                   color: 'white',
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   fontSize: '0.9rem',
                   fontWeight: '700',
                   cursor: 'pointer',
@@ -192,6 +242,26 @@ export default function Archive({ drafts, currentDraft, setDrafts, setCurrentDra
           </div>
         ))
       )}
+      <style>
+        {`
+          @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+          .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            width: 100%;
+          }
+          .draft-actions {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+          }
+        `}
+      </style>
     </div>
   );
 }
